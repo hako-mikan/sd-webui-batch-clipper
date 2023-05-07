@@ -8,6 +8,7 @@ from torchvision import transforms
 import cv2
 import torch
 import numpy as np
+import requests
 from modules import script_callbacks
 
 def get_folder(file):
