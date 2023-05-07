@@ -18,7 +18,7 @@ def on_ui_tabs():
     with gr.Blocks() as ui:
         with gr.Row():
             clipmode = gr.Radio(choices=["clip", "mask"], value="clip", label="mode")
-            options = gr.CheckboxGroup(label = "option", choices=["crop"], type = "value", value = "crop")
+            options = gr.CheckboxGroup(label = "option", choices=["crop", "crop with bg"], type = "value", value = "crop")
         with gr.Row():
             texts = gr.Textbox(label="words")
         with gr.Row():
@@ -61,8 +61,11 @@ def single(img,texts,threshold,blur,smooth,clipmode,options):
         outimage = np.where(mask[:,:,np.newaxis]==0, origimage,255)
     outimage = Image.fromarray(outimage)
 
-    if "crop" in options : outimage = getcrop(outimage)
-    
+    if "crop" in options:
+        outimage = getcrop(outimage)
+    elif "crop with bg" in options:
+        outimage = getcrop_withbg(origimage, outimage)
+
     return outimage
 
 def batchfn(input_dir, output_dir, texts,threshold,blur,clipmode,smooth,options):
@@ -125,5 +128,12 @@ def clipsegdealer():
 def getcrop(img):
     inverted = ImageOps.invert(img)
     crop = inverted.getbbox()
+    img = img.crop(crop)
+    return img
+
+def getcrop_withbg(img, img_for_bbox):
+    inverted = ImageOps.invert(img_for_bbox)
+    crop = inverted.getbbox()
+    img = Image.fromarray(np.uint8(img))
     img = img.crop(crop)
     return img
