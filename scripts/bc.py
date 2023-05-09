@@ -8,6 +8,7 @@ from torchvision import transforms
 import cv2
 import torch
 import numpy as np
+import requests
 from modules import script_callbacks
 
 def get_folder(file):
@@ -86,7 +87,13 @@ def batchfn(input_dir, output_dir, texts,threshold,blur,clipmode,smooth,options)
 def clipseg(image,texts,threshold,blur,smooth):
     model = CLIPDensePredT(version='ViT-B/16',reduce_dim=64,complex_trans_conv=True)
     model.eval()
-    model.load_state_dict(torch.load(clipsegdealer(), map_location=torch.device('cuda')), strict=False)
+    clipseg_filename = clipsegdealer()
+    try:
+        model.load_state_dict(torch.load(clipseg_filename, map_location=torch.device('cuda')), strict=False)
+    except:
+        os.remove(clipseg_filename)
+        model.load_state_dict(torch.load(clipsegdealer(), map_location=torch.device('cuda')), strict=False)
+
     transform = transforms.Compose([transforms.ToTensor(),transforms.Normalize(mean=[0.485, 0.456, 0.406],std=[0.229, 0.224, 0.225]),transforms.Resize((512, 512)),])
     masks =[]
     imaget = transform(image).unsqueeze(0)
